@@ -1,0 +1,113 @@
+Acadgild_Assignment_6_2
+
+1.
+Fetch date and temperature from temperature_data where zip code is greater than
+300000 and less than 399999.
+
+hive> 
+    > select date,temp from temperature_data
+    > where zip_code > 300000
+    > and zip_code < 399999;
+OK
+10-03-1990	15
+10-01-1991	22
+12-02-1990	9
+10-03-1991	16
+10-01-1990	23
+12-02-1991	10
+10-03-1993	16
+10-01-1994	23
+12-02-1991	10
+10-03-1991	16
+10-01-1990	23
+12-02-1991	10
+Time taken: 5.665 seconds, Fetched: 12 row(s)
+
+
+2.
+Calculate maximum temperature corresponding to every year from temperature_data
+table.
+
+hive> select substring(date,7,4) as year,max(temp)
+    > from temperature_data
+    > group by substring(date,7,4);
+
+
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 130.61 sec   HDFS Read: 669 HDFS Write: 32 SUCCESS
+Total MapReduce CPU Time Spent: 2 minutes 10 seconds 610 msec
+OK
+1990	23
+1991	22
+1993	16
+1994	23
+Time taken: 1138.423 seconds, Fetched: 4 row(s)
+
+3.
+Calculate maximum temperature from temperature_data table corresponding to those
+years which have at least 2 entries in the table.
+
+hive> select substring(date,7,4) as year,max(temp) as max_temp
+    > from temperature_data
+    > group by substring(date,7,4)
+    > having count(substring(date,7,4)) >1;
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 136.3 sec   HDFS Read: 669 HDFS Write: 32 SUCCESS
+Total MapReduce CPU Time Spent: 2 minutes 16 seconds 300 msec
+OK
+1990	23
+1991	22
+1993	16
+1994	23
+Time taken: 898.903 seconds, Fetched: 4 row(s)
+
+4.
+Create a view on the top of last query, name it temperature_data_vw.
+
+hive> create view temperature_data_vw
+    > as select substring(date,7,4) as year,max(temp) as max_temp                                                        
+    > from temperature_data
+    > group by substring(date,7,4)
+    > having count(1) > 1;
+OK
+Time taken: 9.632 seconds
+
+5.
+Export contents from temperature_data_vw to a file in local file system, such that each
+file is '|' delimited.
+
+hive> insert overwrite local directory '/home/acadgild/export/temperature_data_vw'
+    > row format delimited
+    > fields terminated by '|'
+    > stored as textfile
+    > select * from temperature_data_vw;
+
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 1
+2017-09-09 23:01:49,803 Stage-1 map = 0%,  reduce = 0%
+2017-09-09 23:02:50,326 Stage-1 map = 0%,  reduce = 0%
+2017-09-09 23:03:51,416 Stage-1 map = 0%,  reduce = 0%
+2017-09-09 23:04:51,760 Stage-1 map = 0%,  reduce = 0%
+2017-09-09 23:05:52,862 Stage-1 map = 0%,  reduce = 0%, Cumulative CPU 27.86 sec
+2017-09-09 23:06:09,547 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 59.9 sec
+2017-09-09 23:07:10,227 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 59.9 sec
+2017-09-09 23:08:10,884 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 59.9 sec
+2017-09-09 23:09:12,497 Stage-1 map = 100%,  reduce = 39%, Cumulative CPU 69.98 sec
+2017-09-09 23:09:15,882 Stage-1 map = 100%,  reduce = 67%, Cumulative CPU 72.11 sec
+2017-09-09 23:10:17,161 Stage-1 map = 100%,  reduce = 67%, Cumulative CPU 74.89 sec
+2017-09-09 23:10:27,783 Stage-1 map = 100%,  reduce = 83%, Cumulative CPU 123.34 sec
+2017-09-09 23:10:38,081 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 129.92 sec
+MapReduce Total cumulative CPU time: 2 minutes 9 seconds 920 msec
+Ended Job = job_1504964158757_0006
+Copying data to local directory /home/acadgild/export/temperature_data_vw
+Copying data to local directory /home/acadgild/export/temperature_data_vw
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 133.24 sec   HDFS Read: 669 HDFS Write: 32 SUCCESS
+Total MapReduce CPU Time Spent: 2 minutes 13 seconds 240 msec
+OK
+Time taken: 831.957 seconds
+
+
+
+
+
+
